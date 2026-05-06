@@ -693,18 +693,24 @@ async def main():
     # Start self-ping loop
     asyncio.create_task(self_ping())
 
-    logger.info("Starting user client...")
-    await user_client.start()
+    logger.info("Connecting user client (no updates mode)...")
+    await user_client.connect()  # 👈 connect() instead of start() to skip updates loop
+    
     logger.info("Starting bot client...")
+    try:
+        await app.delete_webhook(drop_pending_updates=True)
+    except:
+        pass
+        
     await app.start()
-    logger.info("✅ Unlocker Pro v4.0 is live!")
+    logger.info("✅ Unlocker Pro v4.0 is live and responding!")
     
     # Use pyrogram's idle to keep the bot running and responsive
     await idle()
     
     # Stop clients on exit
     await app.stop()
-    await user_client.stop()
+    await user_client.disconnect() # use disconnect for connect()
 
 if __name__ == "__main__":
     try:

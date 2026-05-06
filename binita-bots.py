@@ -146,11 +146,12 @@ app = Client(
 )
 
 user_client = Client(
-    ":memory:",
+    "user_session",
     api_id=API_ID,
     api_hash=API_HASH,
     session_string=USER_SESSION_STRING,
     sleep_threshold=10,
+    no_updates=True  # 👈 Isse background errors (Peer id invalid) band ho jayenge
 )
 
 # ------------------------- LOGGING -------------------------

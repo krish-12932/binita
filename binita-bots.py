@@ -151,6 +151,7 @@ user_client = Client(
     api_hash=API_HASH,
     session_string=USER_SESSION_STRING,
     sleep_threshold=10,
+    plugins=dict(root="no_plugins")  # 👈 Dummy plugins to stop update handling
 )
 
 # ------------------------- LOGGING -------------------------
@@ -328,6 +329,7 @@ def access_required(func):
 @access_required
 async def start_command(client, message: Message):
     uid = message.from_user.id
+    logger.info(f"🚀 Start command triggered by {uid}")
     user = await db.ensure_user(uid)
 
     # Handle referral
@@ -444,6 +446,7 @@ async def menu_handler(client, callback: CallbackQuery):
 @access_required
 async def text_handler(client, message: Message):
     uid = message.from_user.id
+    logger.info(f"📩 Message from {uid}: {message.text[:50]}")
     state = user_states.get(uid, "search")  # default to search if no state
     user_states[uid] = state
 

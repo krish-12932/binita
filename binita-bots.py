@@ -20,7 +20,7 @@ from typing import Dict, List, Optional, Tuple
 MISSING_MODULES = []
 
 try:
-    from pyrogram import Client, filters, enums
+    from pyrogram import Client, filters, enums, idle
     from pyrogram.types import (
         InlineKeyboardMarkup,
         InlineKeyboardButton,
@@ -146,12 +146,11 @@ app = Client(
 )
 
 user_client = Client(
-    "user_session",
+    ":memory:",
     api_id=API_ID,
     api_hash=API_HASH,
     session_string=USER_SESSION_STRING,
     sleep_threshold=10,
-    no_updates=True  # 👈 Isse background errors (Peer id invalid) band ho jayenge
 )
 
 # ------------------------- LOGGING -------------------------
@@ -696,8 +695,13 @@ async def main():
     logger.info("Starting bot client...")
     await app.start()
     logger.info("✅ Unlocker Pro v4.0 is live!")
-    # Block forever
-    await asyncio.Event().wait()
+    
+    # Use pyrogram's idle to keep the bot running and responsive
+    await idle()
+    
+    # Stop clients on exit
+    await app.stop()
+    await user_client.stop()
 
 if __name__ == "__main__":
     try:

@@ -76,7 +76,12 @@ SHORTENERS = [
     {"name": "ShareDisk", "key": "a0b225b1ae3ee443d6d37aa5a6a4bbb18e44c2f6"},
 ]
 
-REQUIRED_CHANNELS = ["@NepaliMod", "@BIBXMOD", "@UnlockerProoo"]
+# REQUIRED_CHANNELS: Use Numeric ID (like -100...) for private channels, and provide their Invite Links.
+REQUIRED_CHANNELS = [
+    {"id": "@NepaliMod", "url": "https://t.me/NepaliMod"},
+    {"id": "@BIBXMOD", "url": "https://t.me/BIBXMOD"},
+    {"id": "@UnlockerProoo", "url": "https://t.me/UnlockerProoo"}
+]
 
 # Token economy constants
 WELCOME_TOKENS = 5
@@ -167,11 +172,11 @@ user_states: Dict[int, str] = {}  # state machine
 search_cache: Dict[int, List[dict]] = {}  # user_id -> list of search result dicts
 
 # ------------------------- UTILITY FUNCTIONS -------------------------
-async def check_force_join(uid: int) -> Tuple[bool, Optional[str]]:
-    """Returns (joined, missing_channel)"""
+async def check_force_join(uid: int) -> Tuple[bool, Optional[dict]]:
+    """Returns (joined, missing_channel_dict)"""
     for channel in REQUIRED_CHANNELS:
         try:
-            member = await app.get_chat_member(channel, uid)
+            member = await app.get_chat_member(channel["id"], uid)
             if member.status in (
                 enums.ChatMemberStatus.LEFT,
                 enums.ChatMemberStatus.BANNED,
@@ -181,20 +186,20 @@ async def check_force_join(uid: int) -> Tuple[bool, Optional[str]]:
         except (UserNotParticipant, PeerIdInvalid):
             return False, channel
         except Exception as e:
-            logger.warning(f"Force join check error for {channel}: {e}")
+            logger.warning(f"Force join check error for {channel['id']}: {e}")
             return False, channel
     return True, None
 
 async def force_join_reply(uid: int):
     buttons = [
-        [InlineKeyboardButton(f"Join {ch}", url=f"https://t.me/{ch[1:]}")]
+        [InlineKeyboardButton(f"Join Channel", url=ch["url"])]
         for ch in REQUIRED_CHANNELS
     ]
     buttons.append([InlineKeyboardButton("✅ I've Joined", callback_data="check_join")])
     txt = (
         "🔒 **Access Restricted**\n\n"
-        "You must join all three channels to use this bot:\n"
-        + "\n".join(f"👉 {ch}" for ch in REQUIRED_CHANNELS)
+        "You must join our channels to use this bot:\n"
+        + "\n".join(f"👉 {ch['id']}" for ch in REQUIRED_CHANNELS)
         + "\n\nAfter joining, click **I've Joined**."
     )
     try:
